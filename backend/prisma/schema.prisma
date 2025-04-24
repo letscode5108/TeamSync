@@ -1,0 +1,302 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  password          String
+  name              String
+  hashedToken       String?
+  role              Role               @default(MEMBER)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  managedTeams      Team[]             @relation("TeamManager")
+  memberTeams       TeamMember[]
+  assignedTasks     Task[]             @relation("AssignedTo")
+  createdTasks      Task[]             @relation("CreatedBy")
+  sentInvitations   TeamInvitation[]   @relation("SentBy")
+  receivedInvites   TeamInvitation[]   @relation("SentTo")
+  notifications     Notification[]
+  messages          Message[]
+  chatMessages      ChatMessage[]
+  chatParticipant   ChatParticipant[]
+  messageReads      MessageRead[]
+  meetingAttendees  MeetingAttendee[]
+}
+
+enum Role {
+ MANAGER
+  MEMBER
+}
+
+model Team {
+  id           String           @id @default(uuid())
+  name         String
+  description  String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  managerId    String
+  manager      User             @relation("TeamManager", fields: [managerId], references: [id])
+  members      TeamMember[]
+  tasks        Task[]
+  invitations  TeamInvitation[]
+  meetings     Meeting[]
+  messages     Message[]
+  chats        Chat[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  userId    String
+  teamId    String
+  joinedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+}
+
+model TeamInvitation {
+  id        String           @id @default(uuid())
+  teamId    String
+  senderId  String
+  email     String
+  status    InvitationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  expiresAt DateTime
+  token     String           @unique
+  team      Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  sender    User             @relation("SentBy", fields: [senderId], references: [id])
+  recipient User?            @relation("SentTo", fields: [recipientId], references: [id])
+  recipientId String?
+
+  @@unique([teamId, email])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(NOT_STARTED)
+  priority    Priority   @default(MEDIUM)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deadline    DateTime?
+  teamId      String
+  creatorId   String
+  assigneeId  String?
+  parentId    String?    // For subtasks
+  team        Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  creator     User       @relation("CreatedBy", fields: [creatorId], references: [id])
+  assignee    User?      @relation("AssignedTo", fields: [assigneeId], references: [id])
+  parent      Task?      @relation("SubTasks", fields: [parentId], references: [id], onDelete: SetNull)
+  subtasks    Task[]     @relation("SubTasks")
+  resources   Resource[]
+  comments    Comment[]
+  history     TaskHistory[]
+  chats       Chat[]      @relation("TaskChat")
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  READY_TO_START
+  IN_PROGRESS
+  ALMOST_DONE
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model TaskHistory {
+  id          String     @id @default(uuid())
+  taskId      String
+  status      TaskStatus
+  changedAt   DateTime   @default(now())
+  task        Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Resource {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  type      String
+  taskId    String
+  createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  taskId    String
+  createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Meeting {
+  id          String            @id @default(uuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  roomCode    String            @unique
+  teamId      String
+  createdAt   DateTime          @default(now())
+  team        Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  attendees   MeetingAttendee[]
+  resources   MeetingResource[]
+  chats       Chat[]            @relation("MeetingChat")
+}
+
+model MeetingAttendee {
+  id        String   @id @default(uuid())
+  meetingId String
+  userId    String
+  status    String   @default("pending") // pending, accepted, declined
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+}
+
+model MeetingResource {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  type      String
+  meetingId String
+  createdAt DateTime @default(now())
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String        @id @default(uuid())
+  content   String
+  teamId    String
+  senderId  String
+  createdAt DateTime      @default(now())
+  team      Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  sender    User          @relation(fields: [senderId], references: [id])
+  readBy    MessageRead[] @relation("TeamMessageRead")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  type        NotificationType
+  content     String
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  userId      String
+  relatedId   String?          // Can be taskId, meetingId, etc.
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_STATUS_CHANGE
+  TASK_DEADLINE_APPROACHING
+  TASK_DEADLINE_MISSED
+  MEETING_SCHEDULED
+  TEAM_INVITATION
+  MESSAGE
+  CHAT_MESSAGE
+}
+
+// Models for Group Chat functionality
+model Chat {
+  id              String            @id @default(uuid())
+  name            String?
+  type            ChatType
+  teamId          String
+  taskId          String?           // For task-specific chats
+  meetingId       String?           // For meeting-specific chats
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  team            Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  task            Task?             @relation("TaskChat", fields: [taskId], references: [id], onDelete: SetNull)
+  meeting         Meeting?          @relation("MeetingChat", fields: [meetingId], references: [id], onDelete: SetNull)
+  participants    ChatParticipant[]
+  messages        ChatMessage[]
+
+  @@unique([teamId, type, taskId, meetingId])
+}
+
+enum ChatType {
+  TEAM           // General team chat
+  TASK           // Task-specific chat
+  MEETING        // Meeting chat
+  DIRECT         // Direct messages between team members
+}
+
+model ChatParticipant {
+  id        String   @id @default(uuid())
+  chatId    String
+  userId    String
+  joinedAt  DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+}
+
+model ChatMessage {
+  id        String        @id @default(uuid())
+  content   String
+  chatId    String
+  senderId  String
+  createdAt DateTime      @default(now())
+  chat      Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    User          @relation(fields: [senderId], references: [id])
+  readBy    MessageRead[] @relation("ChatMessageRead")
+   attachments  ChatAttachment[]
+}
+
+// New model for message read tracking
+model MessageRead {
+  id            String      @id @default(uuid())
+  userId        String
+  chatMessageId String?
+  teamMessageId String?
+  readAt        DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatMessage   ChatMessage? @relation("ChatMessageRead", fields: [chatMessageId], references: [id], onDelete: Cascade)
+  teamMessage   Message?    @relation("TeamMessageRead", fields: [teamMessageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chatMessageId])
+  @@unique([userId, teamMessageId])
+}
+model ChatAttachment {
+  id            String      @id @default(uuid())
+  chatMessageId String
+  fileName      String
+  fileType      String
+  fileSize      Int
+  cloudinaryUrl String
+  publicId      String      // Cloudinary public ID
+  createdAt     DateTime    @default(now())
+  chatMessage   ChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+}
