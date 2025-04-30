@@ -1,15 +1,20 @@
+# TaskSync
 
 A comprehensive task management platform designed for remote teams.
+
+## Overview
+
 TaskSync streamlines team collaboration and task management for remote-first companies. The platform enables managers to oversee multiple teams, assign tasks, track progress, and conduct virtual meetings—all within a single integrated system.
 
- Features
- Team Management
-- Manager Account Creation: Create a central dashboard to manage multiple teams
-- Member Invitations: Send email invitations to team members
-- Team Size Flexibility: Support for teams of any size
-- Multi-Team Management: Manage 2-3 teams simultaneously
+## Features
 
- Task Assignment
+### Team Management
+- **Manager Account Creation**: Create a central dashboard to manage multiple teams
+- **Member Invitations**: Send email invitations to team members
+- **Team Size Flexibility**: Support for teams of any size
+- **Multi-Team Management**: Manage 2-3 teams simultaneously
+
+### Task Assignment
 - **Task Creation**: Assign detailed tasks to team members
 - **Automated Notifications**: Email and in-app notifications for new assignments
 - **Deadline Setting**: Set and track due dates for all tasks
@@ -26,9 +31,9 @@ TaskSync streamlines team collaboration and task management for remote-first com
 - **Real-time Updates**: See status changes as they happen
 
 ### Team Communication
--Virtual Meeting Rooms: Dedicated spaces for team discussions
-- Resource Sharing: Exchange files and materials within the platform
--Team Broadcasting: Send announcements to entire teams
+- **Virtual Meeting Rooms**: Dedicated spaces for team discussions
+- **Resource Sharing**: Exchange files and materials within the platform
+- **Team Broadcasting**: Send announcements to entire teams
 
 ## For Remote Companies
 
