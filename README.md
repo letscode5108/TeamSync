@@ -13,7 +13,12 @@ TaskSync streamlines team collaboration and task management for remote-first com
 - **Member Invitations**: Send email invitations to team members
 - **Team Size Flexibility**: Support for teams of any size
 - **Multi-Team Management**: Manage 2-3 teams simultaneously
-
+- 
+### Team Communication
+- **Team Chat**: Real-time messaging for  team conversations
+- **Virtual Meeting Rooms**: Video conferencing for face-to-face remote collaboration
+- **Resource Sharing**: Exchange files and materials within the platform
+- 
 ### Task Assignment
 - **Task Creation**: Assign detailed tasks to team members
 - **Automated Notifications**: Email and in-app notifications for new assignments
@@ -30,10 +35,7 @@ TaskSync streamlines team collaboration and task management for remote-first com
 - **Visual Dashboard**: Dynamic pie charts and progress bars
 - **Real-time Updates**: See status changes as they happen
 
-### Team Communication
-- **Virtual Meeting Rooms**: Dedicated spaces for team discussions
-- **Resource Sharing**: Exchange files and materials within the platform
-- **Team Broadcasting**: Send announcements to entire teams
+
 
 ## For Remote Companies
 
@@ -52,12 +54,8 @@ TaskSync is specifically designed for remote-first organizations:
 5. Team members update progress as they work
 6. Manager monitors progress through the dashboard
 
-## System Requirements
 
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- Internet connection
-- Valid email address for notifications
 
 ## Contact
 
-For support or questions, contact teamsync963@gmail.com
+For support or questions, contact support@tasksync.com
